@@ -1,130 +1,27 @@
 import createPrompt from "prompt-sync";
 import fs from "fs";
 
+import { Book, BookCategory, TypeBook } from "./types";
+import { getCategory } from "./functions";
+
 const prompt = createPrompt();
-
-enum BookCategory {
-    Romance = "Romance",
-    Fantasia = "Fantasia",
-    FiccaoCientifica = "Ficção Científica",
-    Biografia = "Biografia",
-    Historia = "História",
-    Tecnologia = "Tecnologia",
-    Terror = "Terror",
-    Outro = "Outro",
-}
-
-type TypeBook = {
-    title: string;
-    summary: string;
-    year: number;
-    pages: number;
-    isbn: string;
-    category: BookCategory;
-}
-
-class Book {
-    title: string;
-    summary: string;
-    year: number;
-    pages: number;
-    isbn: string;
-    category: BookCategory;
-
-    constructor(title: string, summary: string, year: number, pages: number, isbn: string, category: BookCategory) {
-        this.title = title;
-        this.summary = summary;
-        this.year = year;
-        this.pages = pages;
-        this.isbn = isbn;
-        this.category = category;
-    }
-
-    public toObject(): TypeBook {
-        return {
-            title: this.title,
-            summary: this.summary,
-            year: this.year,
-            pages: this.pages,
-            isbn: this.isbn,
-            category: this.category,
-        }
-    }
-
-    public static saveBook(bookObject: TypeBook, path: string) {
-        let bookList: TypeBook[] = [];
-
-        try {
-            const data: string = fs.readFileSync(path, "utf-8");
-            bookList = JSON.parse(data);
-        } catch (err: any) {
-            if (err.code === "ENOENT") {
-                console.log(`\nArquivo ${path} ainda não existe, ele será criado agora.\n`);
-            } else {
-                throw err;
-            }
-        }
-
-        bookList.push(bookObject);
-
-        fs.writeFileSync(path, JSON.stringify(bookList, null, 2));
-    }
-}
-
-const getCategory = (): BookCategory => {
-    let category: BookCategory;
-
-    while (true) {
-        console.log("\nEscolha o número da categoria do livro: \n\n1 - Romance.\n2 - Fantasia.\n3 - Ficção Científica.\n4 - Biografia.\n5 - História.\n6 - Tecnologia.\n7 - Terror.\n8 - Outro.\n");
-        const option: number = Number(prompt("Escolha: "));
-
-        switch (option) {
-            case 1:
-                category = BookCategory.Romance;
-                break;
-            case 2:
-                category = BookCategory.Fantasia;
-                break;
-            case 3:
-                category = BookCategory.FiccaoCientifica;
-                break;
-            case 4:
-                category = BookCategory.Biografia;
-                break;
-            case 5:
-                category = BookCategory.Historia;
-                break;
-            case 6:
-                category = BookCategory.Tecnologia;
-                break;
-            case 7:
-                category = BookCategory.Terror;
-                break;
-            case 8:
-                category = BookCategory.Outro;
-                break;
-            default:
-                console.log("Escolha uma opção válida!\n");
-                continue;
-        }
-        break;
-    }
-
-    return category;
-}
 
 let menu: boolean = true;
 
-const currYear: number = new Date().getFullYear();
-
 while (menu) {
-    console.log("\n1 - Adcionar um livro.");
+    const currYear: number = new Date().getFullYear();
 
-    console.log("\n2 - Buscar livro por categoria.");
-
-    console.log("\n3 - Buscar livro por nome. ");
-
-    console.log("\n0 - Sair\n");
+    console.clear();
+    console.log([
+        "1 - Adcionar um livro.",
+        "",
+        "2 - Buscar livro por categoria.",
+        "",
+        "3 - Buscar livro por nome.",
+        "",
+        "0 - Sair.",
+        "",
+    ].join("\n"));
 
     const choice: number = Number(prompt("Escolha: "));
 
@@ -191,7 +88,9 @@ while (menu) {
             continue;
         case 2:
             try {
+                console.clear();
                 const category: BookCategory = getCategory();
+                
                 const data: string = fs.readFileSync("./books.json", "utf-8");
                 const bookList: TypeBook[] = JSON.parse(data);
 
@@ -223,7 +122,7 @@ while (menu) {
                 const data: string = fs.readFileSync("./books.json", "utf-8");
                 const bookList: TypeBook[] = JSON.parse(data);
 
-                const filterBook: TypeBook[] = bookList.filter((book) => book.title.includes(title));
+                const filterBook: TypeBook[] = bookList.filter((book) => book.title.toLowerCase().includes(title.toLowerCase()));
 
                 console.clear();
 
