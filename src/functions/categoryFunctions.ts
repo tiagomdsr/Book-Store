@@ -1,11 +1,11 @@
 import createPrompt from "prompt-sync";
 
-import { BookCategory } from "./types";
+import { BookCategory } from "../types";
 
 const prompt = createPrompt();
 
-const getCategory = (): BookCategory => {
-    let category: BookCategory;
+function getCategory(): number {
+    let category: number;
 
     while (true) {
         console.log("Escolha o número da categoria do livro: \n");
@@ -20,28 +20,28 @@ const getCategory = (): BookCategory => {
 
         switch (option) {
             case 1:
-                category = BookCategory.Romance;
+                category = 1;
                 break;
             case 2:
-                category = BookCategory.Fantasia;
+                category = 2;
                 break;
             case 3:
-                category = BookCategory.FiccaoCientifica;
+                category = 3;
                 break;
             case 4:
-                category = BookCategory.Biografia;
+                category = 4;
                 break;
             case 5:
-                category = BookCategory.Historia;
+                category = 5;
                 break;
             case 6:
-                category = BookCategory.Tecnologia;
+                category = 6;
                 break;
             case 7:
-                category = BookCategory.Terror;
+                category = 7;
                 break;
             case 8:
-                category = BookCategory.Outro;
+                category = 8;
                 break;
             default:
                 console.log("Escolha uma opção válida!\n");

@@ -4,16 +4,20 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx ./src",
+    "test": "tsx ./src/tests.ts",
     "start": "node ./dist",
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/pg": "^8.15.4",
     "@types/prompt-sync": "^4.2.3",
+    "dotenv": "^16.5.0",
+    "email-validator": "^2.0.4",
+    "pg": "^8.16.0",
     "prompt-sync": "^4.2.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
