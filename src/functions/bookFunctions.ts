@@ -1,9 +1,10 @@
 import { QueryResult } from "pg";
 import CreatePrompt from "prompt-sync";
+import chalk from "chalk";
 
 import { pool } from "../database/connection";
 import { Book } from "../models/Book";
-import { BookCategory, TypeBook } from "../types";
+import { BookCategory, TypeBook, TypeBookPrint } from "../types";
 import { getCategory } from "../functions/categoryFunctions";
 import { addAuthor, buildAuthor, getAllAuthors } from "./authorFunctions";
 import { addPublisher, buildPublisher, getAllPublishers } from "./publisherFunctions";
@@ -27,29 +28,29 @@ async function buildBook() {
 
     console.clear();
 
-    const title: string = prompt("Digite o título do livro: ");
-    const summary: string = prompt("Digite o resumo do livro: ");
+    const title: string = prompt(chalk.blue("Digite o título do livro: "));
+    const summary: string = prompt(chalk.blue("Digite o resumo do livro: "));
     let authorId: number; 
     
     while (true) {
         let allAuthorsIds: number[] = [];
 
-        const authorsList = await getAllAuthors();
-
         console.clear();
 
-        console.log("Escolha de autor(a):\n")
+        console.log(chalk.blueBright("Escolha de autor(a):\n"));
+
+        const authorsList = await getAllAuthors();
 
         for (const author in authorsList) {
-            console.log(`${authorsList[author].authorId} - ${authorsList[author].name}.`);
+            console.log(`${chalk.blue(authorsList[author].authorId)} - ${authorsList[author].name}.`);
             allAuthorsIds.push(Number(authorsList[author].authorId!));
         };
 
-        console.log("\n0 - Adicionar um(a) novo(a) autor(a).\n");
+        console.log(`\n${chalk.blue("0")} - Adicionar um(a) novo(a) autor(a).\n`);
 
-        console.log("Digite o número do(a) autor(a) do livro, ou crie um novo se não existir na lista: ");
+        console.log(chalk.blue("Digite o número do(a) autor(a) do livro, ou crie um novo se não existir na lista: "));
 
-        const option: number = Number(prompt("Escolha: "));
+        const option: number = Number(prompt(chalk.blue("Escolha: ")));
 
         const validOption: boolean = allAuthorsIds.includes(option);
 
@@ -57,7 +58,7 @@ async function buildBook() {
             await addAuthor(buildAuthor());
             continue;
         } else if (!validOption) {
-            console.log("\nDigite um autor válido\n");
+            console.log(chalk.red("\nDigite um autor válido\n"));
             continue;
         }
 
@@ -68,10 +69,10 @@ async function buildBook() {
     let year: number;
 
     while (true) {
-        year = Number(prompt("Digite o ano de lançamento do livro: "));
+        year = Number(prompt(chalk.blue("Digite o ano de lançamento do livro: ")));
 
         if (year > currYear || year < 0 || !Number(year)) {
-            console.log("\nDigite um ano válido.\n");
+            console.log(chalk.red("\nDigite um ano válido.\n"));
             continue;
         }
 
@@ -81,10 +82,10 @@ async function buildBook() {
     let pages: number;
 
     while (true) {
-        pages = Number(prompt("Digite o número de páginas do livro: "));
+        pages = Number(prompt(chalk.blue("Digite o número de páginas do livro: ")));
 
         if (pages < 1 || !Number(pages)) {
-            console.log("\nDigite um número de páginas válido.\n");
+            console.log(chalk.red("\nDigite um número de páginas válido.\n"));
             continue;
         }
 
@@ -94,10 +95,10 @@ async function buildBook() {
     let isbn: string;
 
     while (true) {
-        isbn = prompt("Digite o isbn do livro: ");
+        isbn = prompt(chalk.blue("Digite o isbn do livro: "));
 
         if (isbn.length !== 13) {
-            console.log("\nDigite um ISBN válido, o ISBN deve ter 13 caracteres.\n");
+            console.log(chalk.red("\nDigite um ISBN válido, o ISBN deve ter 13 caracteres.\n"));
             continue;
         }
 
@@ -111,22 +112,22 @@ async function buildBook() {
     while (true) {
         let allPublishersIds: number[] = [];
 
-        const publishersList = await getAllPublishers();
-
         console.clear();
 
-        console.log("Escolha de editora:\n");
+        console.log(chalk.blueBright("Escolha de editora:\n"));
+
+        const publishersList = await getAllPublishers();
 
         for (const publisher in publishersList) {
-            console.log(`${publishersList[publisher].publisherId} - ${publishersList[publisher].name}.`);
+            console.log(`${chalk.blue(publishersList[publisher].publisherId)} - ${publishersList[publisher].name}.`);
             allPublishersIds.push(Number(publishersList[publisher].publisherId!));
         };
 
-        console.log("\n0 - Adicionar uma nova editora.\n");
+        console.log(`\n${chalk.blue("0")} - Adicionar uma nova editora.\n`);
 
-        console.log("Digite o número da editora do livro, ou crie uma nova se não existir na lista: ");
+        console.log(chalk.blue("Digite o número da editora do livro, ou crie uma nova se não existir na lista: "));
 
-        const option: number = Number(prompt("Escolha: "));
+        const option: number = Number(prompt(chalk.blue("Escolha: ")));
 
         const validOption: boolean = allPublishersIds.includes(option);
 
@@ -134,7 +135,7 @@ async function buildBook() {
             await addPublisher(buildPublisher());
             continue;
         } else if (!validOption) {
-            console.log("\nDigite uma editora válida\n");
+            console.log(chalk.red("\nDigite uma editora válida\n"));
             continue;
         }
 
@@ -149,16 +150,15 @@ async function buildBook() {
 
 async function addBook(book: TypeBook): Promise<void> {
     try {
-        const res: QueryResult<TypeBook> = await pool.query(
+        await pool.query(
             "INSERT INTO livraria.livros(id_categoria, id_editora, id_autor, titulo, resumo, ano, paginas, isbn) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;",
             [book.categoryId, book.publisherId, book.authorId, book.title, book.summary, book.year, book.pages, book.isbn]
         );
 
         console.clear();
-        console.log(`Livro "${book.title}" adicionado com sucesso.`);
-        console.log(res.rows);
+        console.log(`Livro "${chalk.blue(book.title)}" adicionado com sucesso.`);
     } catch (err: any) {
-        console.log("Erro:", err);
+        console.log(chalk.red("Erro:"), err);
     }
 }
 
@@ -170,17 +170,19 @@ async function menuBook(): Promise<void> {
         console.clear();
 
         console.log([
-            "1 - Listar todos os livros.",
+            chalk.blueBright("=================== BUSCAR LIVRO ===================="),
             "",
-            "2 - Buscar livro por categoria.",
+            `${chalk.blue("1")} - Listar todos os livros.`,
             "",
-            "3 - Buscar livro por nome.",
+            `${chalk.blue("2")} - Buscar livro por categoria.`,
             "",
-            "0 - Voltar ao menu principal",
+            `${chalk.blue("3")} - Buscar livro por nome.`,
+            "",
+            `${chalk.red("0")} - Voltar ao menu principal`,
             "",  
         ].join("\n"));
 
-        const choice: number = Number(prompt("Escolha: "))
+        const choice: number = Number(prompt(chalk.blue("Escolha: ")));
 
         switch(choice) {
             case 0:
@@ -189,82 +191,131 @@ async function menuBook(): Promise<void> {
                 break;
             case 1:
                 console.clear();
-                const books: TypeBook[] = await getAllBooks();
+                const books: TypeBookPrint[] = await getAllBooksPretty();
 
-                console.log("Livros: ");
-                console.log(books);
-                prompt("\nAperte enter para voltar ao menu\n");
+                console.log(chalk.blueBright("Livros: "));
+                
+                printBooks(books);
+                
+                prompt(chalk.blue("\nAperte enter para voltar ao menu\n"));
 
                 break;
             case 2:
                 console.clear();
                 const category: number = getCategory();
+                console.clear();
                 
-                await getBook(category);
-                prompt("\nAperte enter para voltar ao menu\n");
+                console.log(`Livros de ${chalk.blue(Object.values(BookCategory)[category - 1])}:`);
+                printBooks(await getBook(category));
+                prompt(chalk.blue("\nAperte enter para voltar ao menu\n"));
                 
                 break;
             case 3:
                 console.clear();
-                const search: string = prompt("Digite o nome do livro que deseja buscar: ");
-
-                await getBook(search);
-                prompt("\nAperte enter para voltar ao menu\n");
+                const search: string = prompt(chalk.blue("Digite o nome do livro que deseja buscar: "));
+                console.clear();
+                
+                console.log(`Livros contendo a palavra "${chalk.blue(search)}":`);
+                printBooks(await getBook(search));
+                prompt(chalk.blue("\nAperte enter para voltar ao menu\n"));
 
                 break;
             default:
-                console.log("\nOpção inválida\n");
+                console.log(chalk.red("\nOpção inválida\n"));
         }
     }
 }
 
-async function getAllBooks(): Promise<TypeBook[]> {
+async function getAllBooksRaw(): Promise<TypeBook[]> {
     try {
-        const res: QueryResult<TypeBook> = await pool.query(`SELECT ${bookConvertTypeKeys} FROM livraria.livros;`);
+        const res: QueryResult<TypeBook> = await pool.query(`SELECT ${bookConvertTypeKeys} FROM livraria.livros;`)
 
         if (res.rows.length === 0) {
             console.clear();
-            console.log("Nenhum livro cadastrado");
+            console.log(chalk.red("Nenhum livro cadastrado"));
             return [];
         } else {
             return res.rows;
         }
     } catch (err: any) {
-        console.log("Erro:", err);
+        console.log(chalk.red("Erro:"), err);
+        return [];
+    }    
+    
+}
+
+async function getAllBooksPretty(): Promise<TypeBookPrint[]> {
+    try {
+        const res: QueryResult<TypeBookPrint> = await pool.query(`
+            SELECT l.titulo AS title, c.nome AS category, l.ano AS year, l.resumo AS summary, a.nome AS author, e.nome AS publisher FROM livraria.livros l
+            LEFT JOIN livraria.categorias c ON l.id_categoria = c.id_categoria
+            LEFT JOIN livraria.autores a ON l.id_autor = a.id_autor 
+            LEFT JOIN livraria.editoras e ON l.id_editora = e.id_editora;
+            `);
+
+        if (res.rows.length === 0) {
+            console.clear();
+            console.log(chalk.red("Nenhum livro cadastrado"));
+            return [];
+        } else {
+            return res.rows;
+        }
+    } catch (err: any) {
+        console.log(chalk.red("Erro:"), err);
         return [];
     }
 }
 
-async function getBook(search: string | number): Promise<void> {
+async function getBook(search: string | number): Promise<TypeBookPrint[]> {
     try {
-        let res: QueryResult<TypeBook>;
+        let res: QueryResult<TypeBookPrint>;
 
         if (typeof search === "string") {
-            res = await pool.query(`SELECT ${bookConvertTypeKeys} FROM livraria.livros WHERE titulo ILIKE $1`, [`%${search}%`]);
+            res = await pool.query(`
+                SELECT l.titulo AS title, c.nome AS category, l.resumo AS summary, l.ano AS year, a.nome AS author, e.nome AS publisher FROM livraria.livros l
+                LEFT JOIN livraria.categorias c ON l.id_categoria = c.id_categoria
+                LEFT JOIN livraria.autores a ON l.id_autor = a.id_autor 
+                LEFT JOIN livraria.editoras e ON l.id_editora = e.id_editora
+                WHERE l.titulo ILIKE $1;
+                `, [`%${search}%`]);
         } else {
-            res = await pool.query(`SELECT ${bookConvertTypeKeys} FROM livraria.livros WHERE id_categoria = $1`, [search]);  
+            res = await pool.query(`
+                SELECT l.titulo AS title, c.nome AS category, l.ano AS year, l.resumo AS summary, a.nome AS author, e.nome AS publisher FROM livraria.livros l
+                LEFT JOIN livraria.categorias c ON l.id_categoria = c.id_categoria
+                LEFT JOIN livraria.autores a ON l.id_autor = a.id_autor 
+                LEFT JOIN livraria.editoras e ON l.id_editora = e.id_editora
+                WHERE l.id_categoria = $1;
+                `, [search]);  
         }
         
         if (res.rows.length === 0) {
             console.clear()
             if (typeof search === "string") {
-                console.log(`Nenhum livro com contendo a palavra "${search}" foi encontrado.`);
+                console.log("\n=================================================\n");
+                console.log(chalk.red(`Nenhum livro com contendo a palavra "${search}" foi encontrado.`));
+                return [];
             } else {
-                console.log(`Nenhum livro da categoria ${Object.values(BookCategory)[search - 1]} encontrado.`);
+                console.log("\n=================================================\n");
+                console.log(chalk.red(`Nenhum livro da categoria ${Object.values(BookCategory)[search - 1]} encontrado.`));
+                return [];
             }    
         } else {
-            console.clear();
-            if (typeof search === "string") {
-                console.log(`Livros contendo a palavra "${search}": \n`);
-            } else {
-                console.log(`Livros de ${Object.values(BookCategory)[search - 1]}: \n`);
-            }
-
-            console.log(res.rows);
+            return res.rows;
         }
     } catch (err: any) {
-        console.error("Erro:", err);
+        console.log("\n=================================================\n");
+        console.error(chalk.red("Erro:"), err);
+        return [];
     }
 }
 
-export { getBook, menuBook, buildBook, addBook };
+function printBooks(books: TypeBookPrint[]): void {
+    for (const book in books) {
+        console.log("\n=================================================\n");
+        console.log(`${chalk.blue("Título:")} ${books[book].title}\n${chalk.blue("Categoria:")} ${books[book].category}\n${chalk.blue("Resumo:")} ${books[book].summary}\n${chalk.blue("Lançamento:")} ${books[book].year}\n${chalk.blue("Autor(a):")} ${books[book].author}\n${chalk.blue("Editora:")} ${books[book].publisher}`);
+    }
+
+    console.log("\n=================================================\n");
+}
+
+export { getAllBooksRaw, menuBook, buildBook, addBook };

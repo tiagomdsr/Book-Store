@@ -5,17 +5,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCategory = getCategory;
 const prompt_sync_1 = __importDefault(require("prompt-sync"));
+const chalk_1 = __importDefault(require("chalk"));
 const types_1 = require("../types");
 const prompt = (0, prompt_sync_1.default)();
 function getCategory() {
     let category;
     while (true) {
-        console.log("Escolha o número da categoria do livro: \n");
+        console.log(chalk_1.default.blueBright("Escolha o número da categoria do livro: \n"));
         Object.values(types_1.BookCategory).forEach((category, index) => {
-            console.log(`${index + 1} - ${category}`);
+            console.log(`${chalk_1.default.blue(`${index + 1}`)} - ${category}`);
         });
         console.log();
-        const option = Number(prompt("Escolha: "));
+        const option = Number(prompt(chalk_1.default.blue("Escolha: ")));
         switch (option) {
             case 1:
                 category = 1;

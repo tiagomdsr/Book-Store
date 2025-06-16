@@ -16,9 +16,11 @@ exports.buildAuthor = buildAuthor;
 exports.addAuthor = addAuthor;
 exports.menuAuthor = menuAuthor;
 exports.getAllAuthors = getAllAuthors;
-const connection_1 = require("../database/connection");
+exports.printAuthors = printAuthors;
 const prompt_sync_1 = __importDefault(require("prompt-sync"));
 const email_validator_1 = __importDefault(require("email-validator"));
+const chalk_1 = __importDefault(require("chalk"));
+const connection_1 = require("../database/connection");
 const Author_1 = require("../models/Author");
 const prompt = (0, prompt_sync_1.default)();
 const authorConvertTypeKeys = `
@@ -30,38 +32,37 @@ const authorConvertTypeKeys = `
 `;
 function buildAuthor() {
     console.clear();
-    const name = prompt("Digite o nome do autor(a): ");
+    const name = prompt(chalk_1.default.blue("Digite o nome do(a) autor(a): "));
     let email;
     while (true) {
-        email = prompt("Digite o email do(a) autor(a): ");
+        email = prompt(chalk_1.default.blue("Digite o email do(a) autor(a): "));
         if (email_validator_1.default.validate(email)) {
             break;
         }
-        console.log("\nDigite um email válido.\n");
+        console.log(chalk_1.default.red("\nDigite um email válido.\n"));
     }
     let phone;
     while (true) {
-        phone = Number(prompt("Digite o telefone do(a) autor(a): "));
+        phone = Number(prompt(chalk_1.default.blue("Digite o telefone do(a) autor(a): ")));
         if (Number(phone)) {
             break;
         }
-        console.log("\nDigite um telefone válido.\n");
+        console.log(chalk_1.default.red("\nDigite um telefone válido.\n"));
     }
     const phoneString = phone.toString();
-    const bio = prompt("Digite uma breve biografia do(a) autor(a): ");
+    const bio = prompt(chalk_1.default.blue("Digite uma breve biografia do(a) autor(a): "));
     const author = new Author_1.Author(name, email, phoneString, bio);
     return author.toObject();
 }
 function addAuthor(author) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const res = yield connection_1.pool.query("INSERT INTO livraria.autores(nome, email, telefone, bio) VALUES ($1, $2, $3, $4) RETURNING *;", [author.name, author.email, author.phone, author.bio]);
+            yield connection_1.pool.query("INSERT INTO livraria.autores(nome, email, telefone, bio) VALUES ($1, $2, $3, $4) RETURNING *;", [author.name, author.email, author.phone, author.bio]);
             console.clear();
-            console.log(`Autor(a) "${author.name}" adicionado(a) com sucesso!\n`);
-            console.log(res.rows);
+            console.log(`Autor(a) "${chalk_1.default.blue(author.name)}" adicionado(a) com sucesso!\n`);
         }
         catch (err) {
-            console.log("Erro:", err);
+            console.log(chalk_1.default.red("Erro:"), err);
         }
     });
 }
@@ -71,14 +72,16 @@ function menuAuthor() {
         while (menu) {
             console.clear();
             console.log([
-                "1 - Listar todos os autores.",
+                chalk_1.default.blueBright("=================== BUSCAR AUTOR ===================="),
                 "",
-                "2 - Buscar autor por nome.",
+                `${chalk_1.default.blue("1")} - Listar todos os autores.`,
                 "",
-                "0 - Voltar ao menu principal",
+                `${chalk_1.default.blue("2")} - Buscar autor por nome.`,
+                "",
+                `${chalk_1.default.red("0")} - Voltar ao menu principal`,
                 "",
             ].join("\n"));
-            const choice = Number(prompt("Escolha: "));
+            const choice = Number(prompt(chalk_1.default.blue("Escolha: ")));
             switch (choice) {
                 case 0:
                     menu = false;
@@ -86,18 +89,20 @@ function menuAuthor() {
                 case 1:
                     console.clear();
                     const authors = yield getAllAuthors();
-                    console.log("Autores: ");
-                    console.log(authors);
-                    prompt("\nAperte enter para voltar ao menu\n");
+                    console.log(chalk_1.default.blueBright("Autores: "));
+                    printAuthors(authors);
+                    prompt(chalk_1.default.blue("\nAperte enter para voltar ao menu\n"));
                     break;
                 case 2:
                     console.clear();
-                    const name = prompt("Digite o nome do(a) autor(a) que deseja buscar: ");
-                    yield getAuthors(name);
-                    prompt("\nAperte enter para voltar ao menu\n");
+                    const name = prompt(chalk_1.default.blue("Digite o nome do(a) autor(a) que deseja buscar: "));
+                    console.clear();
+                    console.log(`Autores com o nome "${chalk_1.default.blue(name)}":`);
+                    printAuthors(yield getAuthors(name));
+                    prompt(chalk_1.default.blue("\nAperte enter para voltar ao menu\n"));
                     break;
                 default:
-                    console.log("\nOpção inválida\n");
+                    console.log(chalk_1.default.red("\nOpção inválida\n"));
             }
         }
     });
@@ -127,15 +132,25 @@ function getAuthors(search) {
             const res = yield connection_1.pool.query(`SELECT ${authorConvertTypeKeys} FROM livraria.autores WHERE nome ILIKE $1;`, [`%${search}%`]);
             if (res.rows.length === 0) {
                 console.clear();
-                console.log(`Nenhum(a) autor(a) com o nome "${search}" encontrado(a).`);
+                console.log("\n=================================================\n");
+                console.log(chalk_1.default.red(`Nenhum(a) autor(a) com o nome "${search}" encontrado(a).`));
+                return [];
             }
             else {
-                console.log(`Autores com o nome "${search}": `);
-                console.log(res.rows);
+                return res.rows;
             }
         }
         catch (err) {
+            console.log("\n=================================================\n");
             console.log("Erro:", err);
+            return [];
         }
     });
+}
+function printAuthors(authors) {
+    for (const author in authors) {
+        console.log("\n=================================================\n");
+        console.log(`${chalk_1.default.blue("Nome:")} ${authors[author].name}.\n${chalk_1.default.blue("Bio:")} ${authors[author].bio}\n${chalk_1.default.blue("telefone:")} ${authors[author].phone} | ${chalk_1.default.blue("email:")} ${authors[author].email}`);
+    }
+    console.log("\n=================================================\n");
 }

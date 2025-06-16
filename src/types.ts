@@ -21,6 +21,15 @@ type TypeBook = {
     publisherId: number;
 }
 
+type TypeBookPrint = {
+    title: string;
+    year: number;
+    category: string;
+    summary: string;
+    author: string;
+    publisher: string;
+}
+
 type TypeAuthor = {
     authorId?: number; 
     name: string;
@@ -37,4 +46,4 @@ type TypePublisher = {
 }
 
 
-export { BookCategory, TypeBook, TypeAuthor, TypePublisher };
+export { BookCategory, TypeBook, TypeBookPrint, TypeAuthor, TypePublisher };

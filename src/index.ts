@@ -1,4 +1,5 @@
 import createPrompt from "prompt-sync";
+import chalk from "chalk";
 
 import { buildBook, addBook, menuBook } from "./functions/bookFunctions";
 import { buildAuthor, addAuthor, menuAuthor } from "./functions/authorFunctions";
@@ -12,25 +13,25 @@ async function main() {
     while (menu) {
         console.clear();
         console.log([
-            "========== MENU PRINCIPAL ==========",
+            chalk.blueBright("=================== MENU PRINCIPAL ===================="),
             "",
-            "1 - Adcionar um livro.",
+            `${chalk.blue("1")} - Adcionar um livro.`,
             "",
-            "2 - Buscar livro.",
+            `${chalk.blue("2")} - Buscar livro.`,
             "",
-            "3 - Adicionar autor(a).",
+            `${chalk.blue("3")} - Adicionar autor(a).`,
             "",
-            "4 - Buscar autor(a).",
+            `${chalk.blue("4")} - Buscar autor(a).`,
             "",
-            "5 - Adicionar uma editora.",
+            `${chalk.blue("5")} - Adicionar uma editora.`,
             "",
-            "6 - Buscar editora.",
+            `${chalk.blue("6")} - Buscar editora.`,
             "",
-            "0 - Sair.",
+            `${chalk.red("0")} - Sair.`,
             "",
         ].join("\n"));
 
-        const choice: number = Number(prompt("Escolha: "));
+        const choice: number = Number(prompt(chalk.blue("Escolha: ")));
 
         switch (choice) {
             case 0:

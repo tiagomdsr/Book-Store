@@ -1,7 +1,8 @@
-import { pool } from "../database/connection";
-import createPrompt from "prompt-sync";
 import { QueryResult } from "pg";
+import createPrompt from "prompt-sync";
+import chalk from "chalk";
 
+import { pool } from "../database/connection";
 import { TypePublisher } from "../types";
 import { Publisher } from "../models/Publisher"
 
@@ -17,18 +18,18 @@ const publisherConvertTypeKeys = `
 function buildPublisher(): TypePublisher {
     console.clear();
     
-    const name: string = prompt("Digite o nome da editora: ");
-    const address: string = prompt("Digite o endereço da editora: ");
+    const name: string = prompt(chalk.blue("Digite o nome da editora: "));
+    const address: string = prompt(chalk.blue("Digite o endereço da editora: "));
     let phone: number;
 
     while (true) {
-        phone = Number(prompt("Digite o número de telefone da editora: "));
+        phone = Number(prompt(chalk.blue("Digite o número de telefone da editora: ")));
         
         if(Number(phone)) {
             break;
         }
 
-        console.log("\nDigite um telefone válido.\n");
+        console.log(chalk.red("\nDigite um telefone válido.\n"));
     }
 
     const phoneString: string = phone.toString();
@@ -40,16 +41,15 @@ function buildPublisher(): TypePublisher {
 
 async function addPublisher(publisher: TypePublisher) {
     try {
-        const res: QueryResult<TypePublisher> = await pool.query(
+        await pool.query(
             "INSERT INTO livraria.editoras(nome, endereco, telefone) VALUES ($1, $2, $3) RETURNING *;",
             [publisher.name, publisher.address, publisher.phone]
         );
 
         console.clear();
-        console.log(`Editora "${publisher.name}" adicionado(a) com sucesso!\n`);
-        console.log(res.rows);        
+        console.log(`Editora "${chalk.blue(publisher.name)}" adicionado(a) com sucesso!\n`);      
     } catch (err) {
-        console.log("Erro:", err);
+        console.log(chalk.red("Erro:"), err);
     }
 }
 
@@ -60,15 +60,17 @@ async function menuPublisher(): Promise<void> {
         console.clear();
 
         console.log([
-            "1 - Listar todas as editoras.",
+            chalk.blueBright("=================== BUSCAR EDITORA ===================="),
             "",
-            "2 - Buscar editora por nome.",
+            `${chalk.blue("1")} - Listar todas as editoras.`,
             "",
-            "0 - Voltar ao menu principal",
+            `${chalk.blue("2")} - Buscar editora por nome.`,
+            "",
+            `${chalk.red("0")} - Voltar ao menu principal`,
             "",  
         ].join("\n"));
 
-        const choice: number = Number(prompt("Escolha: "))
+        const choice: number = Number(prompt(chalk.blue("Escolha: ")));
 
         switch(choice) {
             case 0:
@@ -79,17 +81,20 @@ async function menuPublisher(): Promise<void> {
                 console.clear();
                 const publishers: TypePublisher[] = await getAllPublishers();
 
-                console.log("Editoras: ");
-                console.log(publishers);
-                prompt("\nAperte enter para voltar ao menu\n");
+                console.log(chalk.blueBright("Editoras:"));
+                printPublishers(publishers);
+                prompt(chalk.blue("\nAperte enter para voltar ao menu\n"));
 
                 break;
             case 2:
                 console.clear();
-                const name: string = prompt("Digite o nome da editora que deseja buscar: ");
+                const name: string = prompt(chalk.blue("Digite o nome da editora que deseja buscar: "));
+
+                console.clear();
                 
-                await getPublishers(name);
-                prompt("\nAperte enter para voltar ao menu\n");
+                console.log(`Editoras com o nome "${chalk.blue(name)}":`);
+                printPublishers(await getPublishers(name));
+                prompt(chalk.blue("\nAperte enter para voltar ao menu\n"));
                 
                 break;
             default:
@@ -104,31 +109,43 @@ async function getAllPublishers(): Promise<TypePublisher[]> {
 
         if (res.rows.length === 0) {
             console.clear();
-            console.log("Nenhuma editora cadastrada");
+            console.log(chalk.red("Nenhuma editora cadastrada"));
             return [];
         } else {
             return res.rows;
         }
     } catch (err: any) {
-        console.log("Erro:", err);
+        console.log(chalk.red("Erro:"), err);
         return [];
     }
 }
 
-async function getPublishers(search: string): Promise<void> {
+async function getPublishers(search: string): Promise<TypePublisher[]> {
     try {
         const res: QueryResult<TypePublisher> = await pool.query(`SELECT ${publisherConvertTypeKeys} FROM livraria.editoras WHERE nome ILIKE $1`, [`%${search}%`]);
 
         if (res.rows.length === 0) {
             console.clear();
-            console.log(`Nenhuma editora com o nome "${search}" encontrada.`)
+            console.log("\n=================================================\n");
+            console.log(chalk.red(`Nenhuma editora com o nome "${search}" encontrada.`));
+            return [];
         } else {
-            console.log(`Editoras com o nome "${search}": `);
-            console.log(res.rows);
+            return res.rows;
         }
     } catch (err: any) {
-        console.log("Erro:", err);
+        console.log("\n=================================================\n");
+        console.log(chalk.red("Erro:", err));
+        return [];
     }
+}
+
+function printPublishers(publishers: TypePublisher[]): void {
+    for (const publisher in publishers) {
+        console.log("\n=================================================\n");
+        console.log(`${chalk.blue("Nome:")} ${publishers[publisher].name}.\n${chalk.blue("telefone:")} ${publishers[publisher].phone}\n${chalk.blue("endereço:")} ${publishers[publisher].address}`);
+    }
+
+    console.log("\n=================================================\n");
 }
 
 export { buildPublisher, addPublisher, menuPublisher, getAllPublishers };

@@ -1,4 +1,5 @@
 import createPrompt from "prompt-sync";
+import chalk from "chalk";
 
 import { BookCategory } from "../types";
 
@@ -8,15 +9,15 @@ function getCategory(): number {
     let category: number;
 
     while (true) {
-        console.log("Escolha o número da categoria do livro: \n");
+        console.log(chalk.blueBright("Escolha o número da categoria do livro: \n"));
 
         Object.values(BookCategory).forEach((category, index) => {
-            console.log(`${index + 1} - ${category}`);
+            console.log(`${chalk.blue(`${index + 1}`)} - ${category}`);
         });
 
         console.log();
 
-        const option: number = Number(prompt("Escolha: "));
+        const option: number = Number(prompt(chalk.blue("Escolha: ")));
 
         switch (option) {
             case 1:

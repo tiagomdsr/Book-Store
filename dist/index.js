@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const prompt_sync_1 = __importDefault(require("prompt-sync"));
+const chalk_1 = __importDefault(require("chalk"));
 const bookFunctions_1 = require("./functions/bookFunctions");
 const authorFunctions_1 = require("./functions/authorFunctions");
 const publisherFunctions_1 = require("./functions/publisherFunctions");
@@ -23,24 +24,24 @@ function main() {
         while (menu) {
             console.clear();
             console.log([
-                "========== MENU PRINCIPAL ==========",
+                chalk_1.default.blueBright("=================== MENU PRINCIPAL ===================="),
                 "",
-                "1 - Adcionar um livro.",
+                `${chalk_1.default.blue("1")} - Adcionar um livro.`,
                 "",
-                "2 - Buscar livro.",
+                `${chalk_1.default.blue("2")} - Buscar livro.`,
                 "",
-                "3 - Adicionar autor(a).",
+                `${chalk_1.default.blue("3")} - Adicionar autor(a).`,
                 "",
-                "4 - Buscar autor(a).",
+                `${chalk_1.default.blue("4")} - Buscar autor(a).`,
                 "",
-                "5 - Adicionar uma editora.",
+                `${chalk_1.default.blue("5")} - Adicionar uma editora.`,
                 "",
-                "6 - Buscar editora.",
+                `${chalk_1.default.blue("6")} - Buscar editora.`,
                 "",
-                "0 - Sair.",
+                `${chalk_1.default.red("0")} - Sair.`,
                 "",
             ].join("\n"));
-            const choice = Number(prompt("Escolha: "));
+            const choice = Number(prompt(chalk_1.default.blue("Escolha: ")));
             switch (choice) {
                 case 0:
                     menu = false;
